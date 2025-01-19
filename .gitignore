@@ -1,3 +1,6 @@
+# environment
+.env
+
 # external dependencies
 node_modules
 
