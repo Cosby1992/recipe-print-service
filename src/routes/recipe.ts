@@ -1,11 +1,17 @@
-import express from 'express';
-const router = express.Router()
+import express from "express";
+import { RecipeRequestDto } from "../dtos/recipe-request.dto";
+import { validationMiddleware } from "../middleware/validation";
+import { HttpStatus, HttpStatusMessages } from "../constants/http-status";
+import { ErrorResponse } from "../dtos/error-response.dto";
+const router = express.Router();
 
 // Attach middleware specific to this router here if necessary
 
-export const recipeRouter = router.post('/extract-from-url', (req, res) => {
-
-    // extract and validate body/dto
+export const recipeRouter = router.post(
+  "/extract-from-url",
+  validationMiddleware(RecipeRequestDto),
+  async (req, res) => {
+    const { url, targetPortions } = req.body as RecipeRequestDto;
 
     // call and "verify" provided url and store html in mem
 
@@ -15,5 +21,5 @@ export const recipeRouter = router.post('/extract-from-url', (req, res) => {
 
     // return json dto with portions, ingredients, preparing steps, etc..
 
-    res.send("[POST '/'] working!");
-});
+  }
+);
