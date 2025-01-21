@@ -1,10 +1,10 @@
-import { IsString, IsInt, IsOptional, Min, IsIn } from "class-validator";
+import { IsInt, Min, IsUrl } from "class-validator";
 
 export class RecipeRequestDto {
-  @IsString()
-  url: string; // Required, must be a valid string.
+  @IsUrl()
+  url: string;
 
   @IsInt()
   @Min(1)
-  targetPortions: number; // Required, must be an integer and greater than 0.
+  targetPortions: number;
 }
