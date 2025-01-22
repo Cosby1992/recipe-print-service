@@ -1,5 +1,12 @@
 import express from "express";
 import { recipeRouter } from "./routes/recipe";
+import dotenv from 'dotenv';
+
+// Load environment variables
+const result = dotenv.config();
+if (result.error) {
+  console.error('Error loading .env:', result.error);
+}
 
 const app = express();
 const port = 3000;
