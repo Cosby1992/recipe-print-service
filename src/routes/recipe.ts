@@ -3,6 +3,7 @@ import { RecipeRequestDto } from "../dtos/recipe-request.dto";
 import { validationMiddleware } from "../middleware/validation";
 import { HttpStatus, HttpStatusMessages } from "../constants/http-status";
 import { ErrorResponse } from "../dtos/error-response.dto";
+import { Message, sendMessageToDeepSeek } from "../integration/deepseek";
 const router = express.Router();
 
 // Attach middleware specific to this router here if necessary
@@ -27,11 +28,19 @@ export const recipeRouter = router.post(
 
     const cleanedHtml = cleanHTML(html);
 
+    // Send predefined prompt to chat deepseek for converting the recepi to json
+    let messages: Message[] = [];
+
+    const content = await sendMessageToDeepSeek(messages);
+  
+    console.log("content:", content);
+    console.log("done!");
+
     // Handle upscale/downscale recipe (portions) eg. 4 portions to 2 portions
 
     // return json dto with portions, ingredients, preparing steps, etc..
 
-    res.json({ "hot": "damn"});
+    res.json({ hot: content });
   }
 );
 
