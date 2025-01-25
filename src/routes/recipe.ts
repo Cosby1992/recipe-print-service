@@ -105,47 +105,4 @@ function cleanHTML(inputHTML: string): string {
     ""
   );
 
-  // Collapse multiple spaces between tags
-  cleanedHTML = cleanedHTML.replace(/>\s+</g, "><"); // Remove spaces between tags
-  cleanedHTML = cleanedHTML.replace(/\s{2,}/g, " "); // Collapse any sequence of multiple spaces
 
-  return cleanedHTML;
-}
-
-// function cleanHTML(inputHTML: string): string {
-//   // Remove unnecessary whitespace, line breaks, and tabs
-//   let cleanedHTML = inputHTML.replace(/\s+/g, " ").trim();
-
-//   // Remove all comments
-//   cleanedHTML = cleanedHTML.replace(/<!--[\s\S]*?-->/g, "");
-
-//   // Remove all <style> tags and their content
-//   cleanedHTML = cleanedHTML.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "");
-
-//   // Remove all <script> tags and their content
-//   cleanedHTML = cleanedHTML.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "");
-
-//   // Remove inline styles (styles within the "style" attribute)
-//   cleanedHTML = cleanedHTML.replace(/\s*style="[^"]*"/gi, "");
-
-//   // Remove inline JavaScript event handlers like onclick, onload, etc.
-//   cleanedHTML = cleanedHTML.replace(/\s*(on\w+\s*=\s*[^>]*\s*)/gi, "");
-
-//   // Remove tags that do not contain visible content (img src or text)
-//   cleanedHTML = cleanedHTML.replace(
-//     /<(?!img[^>]*src|br|hr|p|div|span)[^>]+>/gi,
-//     ""
-//   );
-
-//   // Remove empty tags (those that remain after removing non-visible content)
-//   cleanedHTML = cleanedHTML.replace(
-//     /<([a-z][a-z0-9]*)\s*[^>]*>[\s]*<\/\1>/gi,
-//     ""
-//   );
-
-//   // Collapse multiple spaces into a single space
-//   cleanedHTML = cleanedHTML.replace(/>\s+</g, "><"); // Remove spaces between tags
-//   cleanedHTML = cleanedHTML.replace(/\s{2,}/g, " "); // Collapse any sequence of multiple spaces
-
-//   return cleanedHTML;
-// }
