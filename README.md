@@ -11,7 +11,7 @@ Recipe Print Service is an application that extracts and transforms recipe infor
 
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/your-username/recipe-print-service.git
+   git clone https://github.com/Cosby1992/recipe-print-service
    ```
 
 2. **Navigate to the Directory**:
