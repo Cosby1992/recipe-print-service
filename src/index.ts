@@ -1,6 +1,6 @@
 import express from "express";
 import { recipeRouter } from "./routes/recipe";
-import dotenv from 'dotenv';
+import { globalErrorHandlerMiddleware } from './middleware/global-error-handler';
 
 // Load environment variables
 const result = dotenv.config();
@@ -15,7 +15,7 @@ const port = 3000;
 app.use(express.json());
 
 // Attach routes
-app.use('/recipe', recipeRouter);
+  app.use(globalErrorHandlerMiddleware);
 
 app.listen(port, () => {
     console.log(`Server is litening on port: ${port}`);
