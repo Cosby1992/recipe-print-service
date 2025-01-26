@@ -21,7 +21,7 @@ function start() {
   app.use("/recipe", recipeRouter);
   app.use(globalErrorHandlerMiddleware);
 
-  const port = 3000;
+  const port = process.env.API_PORT ?? 3000;
   app.listen(port, () => {
     console.log(`Server is litening on port: ${port}`);
   });
