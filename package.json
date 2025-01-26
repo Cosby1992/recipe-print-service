@@ -4,6 +4,7 @@
   "main": "dist/index.js",
   "scripts": {
     "start:prod": "node dist/index.js",
+    "start:dev": "nodemon --watch src --ext ts --exec \"ts-node src/index.ts\"",
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -16,8 +17,12 @@
     "class-validator": "^0.14.1",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
-    "jsdom": "^26.0.0",
     "openai": "^4.80.0",
+    "puppeteer": "^24.1.1",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin": "^3.2.3",
+    "puppeteer-extra-plugin-adblocker": "^2.13.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
     "recipe-print-service": "file:",
     "reflect-metadata": "^0.2.2",
     "typescript": "^5.7.3"
@@ -25,6 +30,8 @@
   "devDependencies": {
     "@types/express": "^5.0.0",
     "@types/jsdom": "^21.1.7",
-    "@types/node": "^22.10.7"
+    "@types/node": "^22.10.7",
+    "nodemon": "^3.1.9",
+    "ts-node": "^10.9.2"
   }
 }
