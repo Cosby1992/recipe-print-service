@@ -1,7 +1,7 @@
 import { HttpStatus } from "../constants/http-status";
 
-export type ErrorResponse = {
-    message: string;
-    status: HttpStatus;
-    errors: string[];
-  };
+export class ErrorResponseDto {
+  message: string;
+  status: HttpStatus;
+  errors: string[];
+};
