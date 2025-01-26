@@ -1,108 +1,64 @@
 import express from "express";
 import { RecipeRequestDto } from "../dtos/recipe-request.dto";
 import { validationMiddleware } from "../middleware/validation";
-import { HttpStatus, HttpStatusMessages } from "../constants/http-status";
-import { ErrorResponse } from "../dtos/error-response.dto";
-import { Message, sendMessageToDeepSeek } from "../integration/deepseek";
-const router = express.Router();
+import { getRecipesFromHtmlWithChatGPT } from "../integration/openai";
+import { htmlToText } from "../utils/html-to-text";
+import { scaleRecipe } from "../utils/scale-recipe";
+import { startTimer } from "../utils/performance-timer";
+import { InternalServerError } from "../exceptions/http-error";
+import { RecipesResponseDto } from "../dtos/recipe-response.dto";
+import { expressAsyncHandler } from "../utils/express-async-handler";
 
-// Attach middleware specific to this router here if necessary
+const router = express.Router();
 
 export const recipeRouter = router.post(
   "/extract-from-url",
   validationMiddleware(RecipeRequestDto),
-  async (req, res) => {
+  expressAsyncHandler(async (req, res, next) => {
     const { url, targetPortions } = req.body as RecipeRequestDto;
 
-    // call and "verify" provided url and store html in mem
-    const html = await getHTML(url);
+    const getHtmlTextTimer = startTimer("Call URL and sanitize content");
+    const text = await htmlToText(url);
+    getHtmlTextTimer.log();
 
-    if (!html) {
-      res.status(HttpStatus.BAD_REQUEST).json({
-        message: HttpStatusMessages[HttpStatus.BAD_REQUEST],
-        status: HttpStatus.BAD_REQUEST,
-        errors: [`Failed to get html from: "${url}"`],
-      } satisfies ErrorResponse);
-      return;
+    console.log("Content length: ", text.length);
+
+    if (text.length > 35000)
+      throw new InternalServerError([
+        `HTML was too large after being sanitized, the request has not been passed to ChatGPT`,
+      ]);
+
+    // Send predefined prompt to chatgpt for converting the recepi to json
+    const promptTimer = startTimer("Prompt ChatGPT");
+    const recipesResponseDto = await getRecipesFromHtmlWithChatGPT(`origin:${url};` + text);
+    promptTimer.log();
+
+    if (!recipesResponseDto) {
+      throw new InternalServerError([
+        "Failed to get or clean response from ChatGPT.",
+      ]);
     }
 
-    const cleanedHtml = cleanHTML(html);
-
-    // Send predefined prompt to chat deepseek for converting the recepi to json
-    let messages: Message[] = [];
-
-    const content = await sendMessageToDeepSeek(messages);
-  
-    console.log("content:", content);
-    console.log("done!");
+    if (
+      !recipesResponseDto.recipes[0].details?.portion_count ||
+      !targetPortions ||
+      targetPortions === recipesResponseDto.recipes[0].details?.portion_count
+    ) {
+      // Respond without scaling the recipes
+      res.json(recipesResponseDto);
+      return;
+    }
 
     // Handle upscale/downscale recipe (portions) eg. 4 portions to 2 portions
+    const scaledRecipes = recipesResponseDto.recipes.map((recipe) =>
+      scaleRecipe(recipe, targetPortions)
+    );
 
-    // return json dto with portions, ingredients, preparing steps, etc..
+    console.log(
+      `Scaled recipe to ${targetPortions} servings from ${recipesResponseDto.recipes[0].details?.portion_count} servings`
+    );
 
-    res.json({ hot: content });
-  }
+    // Respond with scaled recipes
+    res.json({ recipes: scaledRecipes } satisfies RecipesResponseDto);
+  })
 );
-
-const getHTML = async (url: string): Promise<string | void> => {
-  try {
-    const response = await fetch(url);
-    if (
-      !response.ok ||
-      !response.headers.get("content-type")?.includes("text/html")
-    ) {
-      return;
-    }
-
-    const body = await response.text();
-
-    return body.includes("<html") ? body : undefined;
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-function cleanHTML(inputHTML: string): string {
-  // Remove unnecessary whitespace, line breaks, and tabs
-  let cleanedHTML = inputHTML.replace(/\s+/g, " ").trim();
-
-  // Remove all comments
-  cleanedHTML = cleanedHTML.replace(/<!--[\s\S]*?-->/g, "");
-
-  // Remove all <style> tags and their content
-  cleanedHTML = cleanedHTML.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "");
-
-  // Remove all <script> tags and their content
-  cleanedHTML = cleanedHTML.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "");
-  // Remove all <path> tags and their content
-  cleanedHTML = cleanedHTML.replace(/<path[^>]*>[\s\S]*?<\/path>/gi, "");
-  // Remove all <svg> tags and their content
-  cleanedHTML = cleanedHTML.replace(/<svg[^>]*>[\s\S]*?<\/svg>/gi, "");
-  // Remove all <svg> tags and their content
-  cleanedHTML = cleanedHTML.replace(/<svg[^>]*>[\s\S]*?<\/svg>/gi, "");
-
-  // Remove inline styles (styles within the "style" attribute)
-  cleanedHTML = cleanedHTML.replace(/\s*style="[^"]*"/gi, "");
-
-  // Remove inline JavaScript event handlers like onclick, onload, etc.
-  cleanedHTML = cleanedHTML.replace(/\s*(on\w+\s*=\s*[^>]*\s*)/gi, "");
-
-  // Remove unwanted tags while keeping <img src> and visible content tags
-  cleanedHTML = cleanedHTML.replace(
-    /<(?!img[^>]*src|br|hr|p|div|span|h[1-6])[^>]+>/gi,
-    ""
-  );
-
-  // Remove empty tags (those that remain after removing non-visible content)
-  cleanedHTML = cleanedHTML.replace(
-    /<([a-z][a-z0-9]*)\s*[^>]*>[\s]*<\/\1>/gi,
-    ""
-  );
-
-  // Remove elements like headers, footers, and navs explicitly
-  cleanedHTML = cleanedHTML.replace(
-    /<(header|footer|nav|aside)[^>]*>[\s\S]*?<\/\1>/gi,
-    ""
-  );
-
-
