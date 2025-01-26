@@ -2,16 +2,33 @@
   "name": "recipe-print-service",
   "version": "1.0.0",
   "main": "dist/index.js",
+  "description": "Recipe Print Service is an application that extracts and transforms recipe information from a provided URL into structured JSON data.",
+  "keywords": [
+    "recipe",
+    "extraction",
+    "scaling",
+    "json",
+    "nodejs",
+    "typescript"
+  ],
+  "author": {
+    "name": "Cosby",
+    "url": "https://github.com/Cosby1992"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Cosby1992/recipe-print-service.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Cosby1992/recipe-print-service/issues"
+  },
   "scripts": {
     "start:prod": "node dist/index.js",
     "start:dev": "nodemon --watch src --ext ts --exec \"ts-node src/index.ts\"",
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "cosby1992",
-  "license": "MIT",
-  "description": "",
   "dependencies": {
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
