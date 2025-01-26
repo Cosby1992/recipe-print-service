@@ -1,5 +1,6 @@
 import express from "express";
 import { recipeRouter } from "./routes/recipe";
+import { requestLogMiddleware } from './middleware/request-log';
 import { globalErrorHandlerMiddleware } from './middleware/global-error-handler';
 
 // Load environment variables
@@ -12,7 +13,7 @@ const app = express();
 const port = 3000;
 
 // Body parser
-app.use(express.json());
+  app.use(requestLogMiddleware);
 
 // Attach routes
   app.use(globalErrorHandlerMiddleware);
