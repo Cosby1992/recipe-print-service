@@ -12,7 +12,7 @@ if (result.error) {
 const app = express();
 const port = 3000;
 
-// Body parser
+  app.use(express.json()); // Body parser
   app.use(requestLogMiddleware);
 
 // Attach routes
