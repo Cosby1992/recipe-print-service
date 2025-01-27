@@ -10,10 +10,11 @@ const padEndColored = (str: string, length: number) => {
   return str + " ".repeat(padding);
 };
 
-const logFormat = printf(({ level, message, timestamp, durationMs }) => {
+const logFormat = printf(({ level, message, timestamp, durationMs, ...metadata }) => {
   const paddedLevel = padEndColored(level, 5); // Ensure level is padded to 5 characters
   const duration = durationMs ? ` ${durationMs}ms` : "";
-  return `[${timestamp}] ${paddedLevel} ${message}${duration}`;
+  const metaString = Object.keys(metadata).length ? ` | ${JSON.stringify(metadata)}` : "";
+  return `[${timestamp}] ${paddedLevel} ${message}${duration}${metaString}`;
 });
 
 // Create a Winston logger
