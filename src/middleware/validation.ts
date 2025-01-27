@@ -27,7 +27,7 @@ import { expressAsyncHandler } from "../utils/express-async-handler";
 export const validationMiddleware = <T extends object>(
   type: new () => T
 ): RequestHandler => {
-return expressAsyncHandler(
+  return expressAsyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       const dtoInstance = plainToInstance(type, req.body);
 
