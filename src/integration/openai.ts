@@ -16,7 +16,7 @@ export const promptChatGPT = async (message: Prompt): Promise<string> => {
   });
 
   try {
-    logger.debug(`Sending prompt to OpenAI: ${JSON.stringify(message)}`);
+    logger.debug(`Sending prompt to OpenAI:`, message);
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       store: true,
