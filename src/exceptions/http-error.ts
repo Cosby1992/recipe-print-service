@@ -5,7 +5,11 @@ export class HttpError extends Error implements ErrorResponseDto {
   public readonly status: HttpStatus;
   public readonly errors: string[];
 
-  constructor(status: HttpStatus, statusText: string, errors: string[] = ['Unknown error']) {
+  constructor(
+    status: HttpStatus,
+    statusText: string,
+    errors: string[] = ["Unknown error"]
+  ) {
     super(statusText);
     this.status = status;
     this.errors = errors;
@@ -33,11 +37,11 @@ export class BadRequestError extends HttpError {
 }
 
 export class NotImplementedError extends HttpError {
-    constructor(errors?: string[]) {
-        super(
-          HttpStatus.NotImplemented,
-          HttpStatusMessages[HttpStatus.NotImplemented],
-          errors
-        );
-      }
+  constructor(errors?: string[]) {
+    super(
+      HttpStatus.NotImplemented,
+      HttpStatusMessages[HttpStatus.NotImplemented],
+      errors
+    );
+  }
 }
