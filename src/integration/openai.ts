@@ -2,6 +2,8 @@ import { plainToInstance } from "class-transformer";
 import OpenAI from "openai";
 import { RecipesResponseDto } from "../dtos/recipe-response.dto";
 import { validate, ValidationError } from "class-validator";
+import logger from "../utils/logger";
+import { config } from "../config/config-loader";
 
 export interface Prompt {
   role: "system" | "user" | "assistant";
@@ -9,50 +11,69 @@ export interface Prompt {
 }
 
 export const promptChatGPT = async (message: Prompt): Promise<string> => {
-  if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY.length < 10) {
-    throw new Error("Missing or invalid OPENAI_API_KEY");
-  }
-
   const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY ?? "",
+    apiKey: config.openaiApiKey,
   });
 
-  const completion = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
-    store: true,
-    messages: [{ role: message.role, content: message.content }],
-  });
+  try {
+    logger.debug(`Sending prompt to OpenAI: ${JSON.stringify(message)}`);
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      store: true,
+      messages: [{ role: message.role, content: message.content }],
+    });
 
-  const { content } = completion.choices[0].message;
+    const { content } = completion.choices[0].message;
+    if (!content) {
+      logger.error("OpenAI response has no content.");
+      throw new Error("No content in OpenAI response.");
+    }
 
-  if (!content) throw new Error("No content!");
-
-  return content;
+    logger.debug("OpenAI response received successfully.");
+    return content;
+  } catch (error) {
+    logger.error(`Error while calling OpenAI:`, { error });
+    throw error;
+  }
 };
 
 export const getRecipesFromHtmlWithChatGPT = async (
   cleanedHTML: string
 ): Promise<RecipesResponseDto | undefined> => {
   try {
+    if (!cleanedHTML) {
+      logger.warn("No cleaned HTML provided for recipe extraction.");
+      return;
+    }
+
     const prompt = buildPrompt("user", cleanedHTML);
 
+    logger.debug("Requesting recipe extraction from OpenAI.");
     const response = await promptChatGPT(prompt);
 
-    if (!response) return;
+    if (!response) {
+      logger.warn("No response received from OpenAI for recipe extraction.");
+      return;
+    }
 
+    logger.debug("Parsing response from OpenAI.");
     const parsed = JSON.parse(response);
 
+    logger.debug("Validating parsed recipe data.");
     const recipeResponseDto = plainToInstance(RecipesResponseDto, parsed);
     const errors = await validate(recipeResponseDto);
 
     if (errors.length > 0) {
+      logger.warn("Validation errors occurred in recipe data.");
       logValidationErrors(errors);
       return;
     }
 
+    logger.debug("Recipe data validated successfully.");
     return recipeResponseDto;
   } catch (error) {
-    console.error(error);
+    logger.error("Error during recipe extraction");
+    throw error;
   }
 };
 
@@ -71,11 +92,15 @@ const logValidationErrors = (errors: ValidationError[]) => {
       });
     };
 
-    console.log(JSON.stringify(formatErrors(errors), null, 2));
+    const formattedErrors = formatErrors(errors);
+    logger.error("Validation errors occurred:", {
+      errors: JSON.stringify(formattedErrors, null, 2),
+    });
   }
 };
 
 const buildPrompt = (role: Prompt["role"], cleanedHTML: string): Prompt => {
+  logger.debug("Building OpenAI prompt.");
   return {
     role,
     content: `Instructions: Extract recipe details from the cleaned HTML provided below, containing only text, img src, and alt attributes. Use the exact text for extraction. Translate all fields to Danish (da-DK), preserving original meaning and measurements.
