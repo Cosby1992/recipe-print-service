@@ -2,14 +2,15 @@ import { Request, Response, NextFunction } from "express";
 import { HttpError } from "../exceptions/http-error";
 import { HttpStatusMessages, HttpStatus } from "../constants/http-status";
 import { ErrorResponseDto } from "../dtos/error-response.dto";
+import logger from "../utils/logger";
 
-export const globalErrorHandlerMiddleware = (
+export const HttpErrorHandlerMiddleware = (
   err: Error,
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  console.error("Global Error Handler:", err);
+  logger.error("HTTP Error Handler:", err);
 
   if (err instanceof HttpError) {
     res.status(err.status).json({

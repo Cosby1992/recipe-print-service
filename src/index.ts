@@ -3,7 +3,7 @@ import { config } from "./config/config-loader";
 import express from "express";
 import { recipeRouter } from "./routes/recipe";
 import { requestLogMiddleware } from "./middleware/request-log";
-import { globalErrorHandlerMiddleware } from "./middleware/global-error-handler";
+import { HttpErrorHandlerMiddleware } from "./middleware/http-error-handler";
 import logger from "./utils/logger";
 
 function start() {
@@ -25,7 +25,7 @@ function start() {
 
   // Middleware: Global Error Handler
   // Global error handler must be registered after everything else
-  app.use(globalErrorHandlerMiddleware);
+  app.use(HttpErrorHandlerMiddleware);
   logger.debug("Registered global error handler");
 
   // Start the server
