@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { config } from "./config/config";
+import { config } from "./config/config-loader";
 import express from "express";
 import { recipeRouter } from "./routes/recipe";
 import { requestLogMiddleware } from "./middleware/request-log";
