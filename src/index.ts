@@ -7,24 +7,24 @@ import { globalErrorHandlerMiddleware } from "./middleware/global-error-handler"
 import logger from "./utils/logger";
 
 function start() {
-  logger.profile("API server startup time:");
-  logger.info("Initializing API server...");
+  logger.profile("API Started in:").info("Initializing API...");
 
   const app = express();
 
   // Middleware: Body Parser
   app.use(express.json());
-  logger.debug("[Middleware] Initialized body parser (JSON payloads)");
+  logger.debug("Registered body parser (JSON payloads)");
 
   // Middleware: Request Logging
   app.use(requestLogMiddleware);
-  logger.debug("[Middleware] Initialized request logger");
+  logger.debug("Registered request logger");
 
   // Routes: Recipe
   app.use("/recipe", recipeRouter);
-  logger.debug("[Routes] Registered '/recipe' route");
+  logger.debug("Registered '/recipe' route");
 
   // Middleware: Global Error Handler
+  // Global error handler must be registered after everything else
   app.use(globalErrorHandlerMiddleware);
   logger.debug("Registered global error handler");
 
