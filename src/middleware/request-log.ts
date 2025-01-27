@@ -17,12 +17,7 @@ export const requestLogMiddleware = (
     const { statusCode } = res;
 
     // Log the request details
-    logger.info(`[${durationMs} ms] ${statusCode} ${method} ${originalUrl}`, {
-      method,
-      url: originalUrl,
-      statusCode,
-      durationMs,
-    });
+    logger.info(`[${durationMs} ms] ${statusCode} ${method} ${originalUrl}`, req.body);
   });
 
   next(); // Proceed to the next middleware or route handler
