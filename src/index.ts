@@ -13,7 +13,7 @@ function start() {
 
   // Middleware: Body Parser
   app.use(express.json());
-  logger.debug("Registered body parser (JSON payloads)");
+  logger.debug("Registered body parser");
 
   // Middleware: Request Logging
   app.use(requestLogMiddleware);
@@ -31,8 +31,8 @@ function start() {
   // Start the server
   app.listen(config.port, () => {
     logger
-      .info(`API server running in '${config.env}' mode`)
-      .info(`API accepting requests on port: ${config.port}`)
+      .info(`API running in '${config.env}' mode`)
+      .info(`Accepting requests on port: ${config.port}`)
       .profile("API Started in:");
   });
 
