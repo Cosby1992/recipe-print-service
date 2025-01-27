@@ -1,12 +1,5 @@
 import "reflect-metadata";
-
-import dotenv from "dotenv";
-// Load environment variables
-const result = dotenv.config();
-if (result.error) {
-  console.error("Error loading .env:", result.error);
-}
-
+import { config } from "./config/config";
 import express from "express";
 import { recipeRouter } from "./routes/recipe";
 import { requestLogMiddleware } from "./middleware/request-log";
@@ -33,17 +26,14 @@ function start() {
 
   // Middleware: Global Error Handler
   app.use(globalErrorHandlerMiddleware);
-  logger.debug("[Middleware] Registered global error handler");
-
-  const port = parseInt(process.env.API_PORT || "3000", 10);
-  const env = process.env.NODE_ENV || "development";
+  logger.debug("Registered global error handler");
 
   // Start the server
-  app.listen(port, () => {
-    logger.info(`API server running in '${env}' mode`);
-    logger.info(`API accepting requests on port: ${port}`);
-    logger.silly("Ready to transform URLs to JSON! :)");
-    logger.profile("API server startup time:");
+  app.listen(config.port, () => {
+    logger
+      .info(`API server running in '${config.env}' mode`)
+      .info(`API accepting requests on port: ${config.port}`)
+      .profile("API Started in:");
   });
 
   // Log unhandled rejections and exceptions
