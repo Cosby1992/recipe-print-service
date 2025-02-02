@@ -21,7 +21,7 @@ function start() {
 
   // Routes: Recipe
   app.use("/recipe", recipeRouter);
-  logger.debug("Registered '/recipe' route");
+  logger.debug("Registered '/recipe' controller");
 
   // Middleware: Global Error Handler
   // Global error handler must be registered after everything else
@@ -34,16 +34,6 @@ function start() {
       .info(`API running in '${config.env}' mode`)
       .info(`Accepting requests on port: ${config.port}`)
       .profile("API Started in:");
-  });
-
-  // Log unhandled rejections and exceptions
-  process.on("unhandledRejection", (reason) => {
-    logger.error("Unhandled Rejection:", reason);
-  });
-
-  process.on("uncaughtException", (error) => {
-    logger.error("Uncaught Exception:", error);
-    process.exit(1); // Exit the process to avoid undefined state
   });
 }
 
