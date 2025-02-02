@@ -4,19 +4,20 @@ import { validationMiddleware } from "../middleware/validation";
 import { getRecipesFromHtmlWithChatGPT } from "../integration/openai";
 import { htmlToText } from "../utils/html-to-text";
 import { scaleRecipe } from "../utils/scale-recipe";
-import { startTimer } from "../utils/performance-timer";
 import { InternalServerError } from "../exceptions/http-error";
 import { RecipesResponseDto } from "../dtos/recipe-response.dto";
 import { expressAsyncHandler } from "../utils/express-async-handler";
 import logger from "../utils/logger";
 
+const routeName = "/extract-from-url";
 const router = express.Router();
 const maxSanitizedContentLength = 35000; // chars
 
 export const recipeRouter = router.post(
-  "/extract-from-url",
+  routeName,
   validationMiddleware(RecipeRequestDto),
-  expressAsyncHandler(async (req, res, next) => {
+  expressAsyncHandler(async (req, res, _next) => {
+    // RecipeRequestDto is validated in middleware so casting is safe
     const { url, targetPortions } = req.body as RecipeRequestDto;
 
     logger
@@ -27,7 +28,9 @@ export const recipeRouter = router.post(
       .profile("Fetch and sanitize HTML from url took:", { level: "debug" });
 
     const text = await htmlToText(url);
-    logger.profile("Fetch and sanitize HTML from url took:", { level: "debug" });
+    logger.profile("Fetch and sanitize HTML from url took:", {
+      level: "debug",
+    });
 
     logger.debug("Sanitized HTML content fetched.", {
       contentLength: text.length,
@@ -36,7 +39,7 @@ export const recipeRouter = router.post(
     if (text.length > maxSanitizedContentLength) {
       logger.error("HTML content is too large after sanitization.", {
         contentLength: text.length,
-        maxSanitizedContentLength
+        maxSanitizedContentLength,
       });
 
       throw new InternalServerError([
@@ -45,7 +48,9 @@ export const recipeRouter = router.post(
     }
 
     // Send predefined prompt to chatgpt for converting the recepi to json
-    logger.debug("Promting OpenAI").profile("OpenAI response took:", { level: "debug" });
+    logger
+      .debug("Promting OpenAI")
+      .profile("OpenAI response took:", { level: "debug" });
     const recipesResponseDto = await getRecipesFromHtmlWithChatGPT(
       `origin:${url};` + text
     );
