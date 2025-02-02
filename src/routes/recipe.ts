@@ -13,12 +13,11 @@ const routeName = "/extract-from-url";
 const router = express.Router();
 const maxSanitizedContentLength = 35000; // chars
 
-export const recipeRouter = router.post(
+export const recipeRouter = router.post<{}, RecipesResponseDto, RecipeRequestDto>(
   routeName,
   validationMiddleware(RecipeRequestDto),
   expressAsyncHandler(async (req, res, _next) => {
-    // RecipeRequestDto is validated in middleware so casting is safe
-    const { url, targetPortions } = req.body as RecipeRequestDto;
+    const { url, targetPortions } = req.body;
 
     logger
       .debug("Received recipe extraction request.", {
@@ -90,6 +89,6 @@ export const recipeRouter = router.post(
     );
 
     // Respond with scaled recipes
-    res.json({ recipes: scaledRecipes } satisfies RecipesResponseDto);
+    res.json({ recipes: scaledRecipes });
   })
 );
