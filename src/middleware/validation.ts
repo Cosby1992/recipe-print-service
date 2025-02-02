@@ -1,12 +1,8 @@
-import { plainToInstance } from "class-transformer";
-import { validate } from "class-validator";
-import { NextFunction, Request, RequestHandler, Response } from "express";
-import {
-  BadRequestError,
-  HttpError,
-  InternalServerError,
-} from "../exceptions/http-error";
-import { expressAsyncHandler } from "../utils/express-async-handler";
+import { plainToInstance } from 'class-transformer';
+import { validate } from 'class-validator';
+import { NextFunction, Request, RequestHandler, Response } from 'express';
+import { BadRequestError, HttpError, InternalServerError } from '../exceptions/http-error';
+import { expressAsyncHandler } from '../utils/express-async-handler';
 
 /**
  * Validates a class using class-validator and class-transformer
@@ -24,29 +20,23 @@ import { expressAsyncHandler } from "../utils/express-async-handler";
  *      }
  * );
  */
-export const validationMiddleware = <T extends object>(
-  type: new () => T
-): RequestHandler => {
-  return expressAsyncHandler(
-    async (req: Request, res: Response, next: NextFunction) => {
-      const dtoInstance = plainToInstance(type, req.body);
+export const validationMiddleware = <T extends object>(type: new () => T): RequestHandler => {
+  return expressAsyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    const dtoInstance = plainToInstance(type, req.body);
 
-      const errors = await validate(dtoInstance, {
-        whitelist: true, // Strips properties not defined in the DTO
-        forbidNonWhitelisted: true, // Rejects requests with extra unexpected fields
-        forbidUnknownValues: true, // Prevents unknown values from being validated
-      });
+    const errors = await validate(dtoInstance, {
+      whitelist: true, // Strips properties not defined in the DTO
+      forbidNonWhitelisted: true, // Rejects requests with extra unexpected fields
+      forbidUnknownValues: true, // Prevents unknown values from being validated
+    });
 
-      if (errors.length > 0) {
-        // Extract error list
-        const validationErrors: string[] = errors.flatMap((error) =>
-          Object.values(error.constraints || {})
-        );
+    if (errors.length > 0) {
+      // Extract error list
+      const validationErrors: string[] = errors.flatMap((error) => Object.values(error.constraints || {}));
 
-        throw new BadRequestError(validationErrors);
-      }
-
-      next();
+      throw new BadRequestError(validationErrors);
     }
-  );
+
+    next();
+  });
 };

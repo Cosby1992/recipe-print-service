@@ -1,12 +1,12 @@
-import { plainToInstance } from "class-transformer";
-import OpenAI from "openai";
-import { RecipesResponseDto } from "../dtos/recipe-response.dto";
-import { validate, ValidationError } from "class-validator";
-import logger from "../utils/logger";
-import { config } from "../config/config-loader";
+import { plainToInstance } from 'class-transformer';
+import OpenAI from 'openai';
+import { RecipesResponseDto } from '../dtos/recipe-response.dto';
+import { validate, ValidationError } from 'class-validator';
+import logger from '../utils/logger';
+import { config } from '../config/config-loader';
 
 export interface Prompt {
-  role: "system" | "user" | "assistant";
+  role: 'system' | 'user' | 'assistant';
   content: string;
 }
 
@@ -18,18 +18,18 @@ export const promptChatGPT = async (message: Prompt): Promise<string> => {
   try {
     logger.debug(`Sending prompt to OpenAI:`, message);
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: 'gpt-4o-mini',
       store: true,
       messages: [{ role: message.role, content: message.content }],
     });
 
     const { content } = completion.choices[0].message;
     if (!content) {
-      logger.error("OpenAI response has no content.");
-      throw new Error("No content in OpenAI response.");
+      logger.error('OpenAI response has no content.');
+      throw new Error('No content in OpenAI response.');
     }
 
-    logger.debug("OpenAI response received successfully.");
+    logger.debug('OpenAI response received successfully.');
     return content;
   } catch (error) {
     logger.error(`Error while calling OpenAI:`, { error });
@@ -42,37 +42,37 @@ export const getRecipesFromHtmlWithChatGPT = async (
 ): Promise<RecipesResponseDto | undefined> => {
   try {
     if (!cleanedHTML) {
-      logger.warn("No cleaned HTML provided for recipe extraction.");
+      logger.warn('No cleaned HTML provided for recipe extraction.');
       return;
     }
 
-    const prompt = buildPrompt("user", cleanedHTML);
+    const prompt = buildPrompt('user', cleanedHTML);
 
-    logger.debug("Requesting recipe extraction from OpenAI.");
+    logger.debug('Requesting recipe extraction from OpenAI.');
     const response = await promptChatGPT(prompt);
 
     if (!response) {
-      logger.warn("No response received from OpenAI for recipe extraction.");
+      logger.warn('No response received from OpenAI for recipe extraction.');
       return;
     }
 
-    logger.debug("Parsing response from OpenAI.");
+    logger.debug('Parsing response from OpenAI.');
     const parsed = JSON.parse(response);
 
-    logger.debug("Validating parsed recipe data.");
+    logger.debug('Validating parsed recipe data.');
     const recipeResponseDto = plainToInstance(RecipesResponseDto, parsed);
     const errors = await validate(recipeResponseDto);
 
     if (errors.length > 0) {
-      logger.warn("Validation errors occurred in recipe data.");
+      logger.warn('Validation errors occurred in recipe data.');
       logValidationErrors(errors);
       return;
     }
 
-    logger.debug("Recipe data validated successfully.");
+    logger.debug('Recipe data validated successfully.');
     return recipeResponseDto;
   } catch (error) {
-    logger.error("Error during recipe extraction");
+    logger.error('Error during recipe extraction');
     throw error;
   }
 };
@@ -93,14 +93,14 @@ const logValidationErrors = (errors: ValidationError[]) => {
     };
 
     const formattedErrors = formatErrors(errors);
-    logger.error("Validation errors occurred:", {
+    logger.error('Validation errors occurred:', {
       errors: JSON.stringify(formattedErrors, null, 2),
     });
   }
 };
 
-const buildPrompt = (role: Prompt["role"], cleanedHTML: string): Prompt => {
-  logger.debug("Building OpenAI prompt.");
+const buildPrompt = (role: Prompt['role'], cleanedHTML: string): Prompt => {
+  logger.debug('Building OpenAI prompt.');
   return {
     role,
     content: `Instructions: Extract recipe details from the cleaned HTML provided below, containing only text, img src, and alt attributes. Use the exact text for extraction. Translate all fields to Danish (da-DK), preserving original meaning and measurements.
